@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: php-reportes-svc
+  namespace: reportes-prod
+  labels:
+    app: php-reportes
+spec:
+  type: ClusterIP
+  selector:
+    app: php-reportes
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80

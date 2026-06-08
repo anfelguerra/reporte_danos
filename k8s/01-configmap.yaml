@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: reportes-config
+  namespace: reportes-prod
+data:
+  APP_ENV: "prod"
+  DB_HOST: "REEMPLAZAR_DB_HOST"
+  DB_NAME: "reporte_danos"
+  DB_CHARSET: "utf8mb4"
