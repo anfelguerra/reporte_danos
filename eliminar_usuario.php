@@ -2,28 +2,32 @@
 session_start();
 require_once 'config/database.php';
 
-// Validar que sea administrador usando la ID numérica correcta (1)
+// REGLA DE SEGURIDAD N°1: Validar rol del Administrador
 if (!isset($_SESSION['usuario_id']) || intval($_SESSION['usuario_rol_id']) !== 1) {
-    die("No tiene privilegios para realizar esta acción.");
+    header("Location: login.php");
+    exit();
 }
 
-if (isset($_GET['id'])) {
-    $id = intval($_GET['id']);
-    
-    // Cláusula de seguridad: Evitar auto-eliminarse y romper la sesión activa
-    if ($id === intval($_SESSION['usuario_id'])) {
-        die("Error de seguridad: No puedes eliminar tu propio usuario mientras estás en sesión.");
+$id_eliminar = intval($_GET['id'] ?? 0);
+
+if ($id_eliminar > 0) {
+    // Protección contra auto-eliminación accidental
+    if ($id_eliminar === intval($_SESSION['usuario_id'])) {
+        header("Location: procesar_usuario.php?error=Operación inválida: No puedes eliminar tu propia sesión.");
+        exit();
     }
 
     try {
         $stmt = $pdo->prepare("DELETE FROM usuarios WHERE id = :id");
-        $stmt->execute([':id' => $id]);
-        header("Location: dashboard.php?status=user_deleted");
-        exit;
+        $stmt->execute(['id' => $id_eliminar]);
+        
+        header("Location: procesar_usuario.php?exito=El usuario ha sido removido del sistema con éxito.");
+        exit();
     } catch (PDOException $e) {
-        die("Error al eliminar el usuario (comprueba restricciones de clave foránea): " . $e->getMessage());
+        header("Location: procesar_usuario.php?error=No se puede eliminar el registro. El usuario cuenta con un historial de tickets activos.");
+        exit();
     }
+} else {
+    header("Location: procesar_usuario.php");
+    exit();
 }
-
-header("Location: dashboard.php");
-exit;
