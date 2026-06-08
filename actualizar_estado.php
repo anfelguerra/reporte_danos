@@ -2,63 +2,51 @@
 session_start();
 require_once 'config/database.php';
 
-// Validar privilegios mediante IDs numéricos de rol (1 = Admin, 2 = Mantenimiento)
-if (!isset($_SESSION['usuario_id']) || !in_array(intval($_SESSION['usuario_rol_id']), [1, 2])) {
-    die("No tiene privilegios para realizar esta acción.");
+// Validar inicio de sesión básico
+if (!isset($_SESSION['usuario_id'])) {
+    header("Location: login.php");
+    exit();
 }
+
+$rol_id = intval($_SESSION['usuario_rol_id']);
+$usuario_id = intval($_SESSION['usuario_id']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $ticket_id = intval($_POST['ticket_id']);
-    $nuevo_estado_id = intval($_POST['estado_id']); // Recibe el ID numérico (1 a 5)
+    $ticket_uuid = trim($_POST['ticket_uuid'] ?? '');
+    $nuevo_estado_id = intval($_POST['estado_id'] ?? 0);
 
-    try {
-        $pdo->beginTransaction();
+    if (!empty($ticket_uuid) && $nuevo_estado_id > 0) {
+        try {
+            // Verificar primero las propiedades del ticket para aplicar reglas 1 y 2
+            $stmtCheck = $pdo->prepare("SELECT usuario_asignado_id FROM reportes WHERE ticket_uuid = :uuid");
+            $stmtCheck->execute(['uuid' => $ticket_uuid]);
+            $ticket = $stmtCheck->fetch();
 
-        // 1. Si es Administrador (rol_id = 1), puede cambiar el estado y reasignar el técnico
-        if (intval($_SESSION['usuario_rol_id']) === 1 && isset($_POST['asignado_a'])) {
-            $asignado_a = !empty($_POST['asignado_a']) ? intval($_POST['asignado_a']) : null;
-            
-            $stmt = $pdo->prepare("UPDATE reportes SET estado_id = :estado_id, usuario_asignado_id = :asignado WHERE id = :id");
-            $stmt->execute([
-                ':estado_id' => $nuevo_estado_id,
-                ':asignado'  => $asignado_a,
-                ':id'        => $ticket_id
-            ]);
-        } else {
-            // Si es técnico de mantenimiento, solo actualiza el estado del ticket
-            $stmt = $pdo->prepare("UPDATE reportes SET estado_id = :estado_id WHERE id = :id");
-            $stmt->execute([
-                ':estado_id' => $nuevo_estado_id, 
-                ':id'        => $ticket_id
-            ]);
+            if ($ticket) {
+                // Validación estricta de permisos de modificación
+                if ($rol_id === 1 || ($rol_id === 2 && intval($ticket['usuario_asignado_id']) === $usuario_id)) {
+                    
+                    $stmtUpdate = $pdo->prepare("UPDATE reportes SET estado_id = :estado_id, fecha_actualizacion = CURRENT_TIMESTAMP() WHERE ticket_uuid = :uuid");
+                    $stmtUpdate->execute([
+                        'estado_id' => $nuevo_estado_id,
+                        'uuid'      => $ticket_uuid
+                    ]);
+
+                    // Redireccionar de vuelta a la vista de detalles del ticket con éxito
+                    header("Location: ver_ticket.php?uuid=" . $ticket_uuid . "&exito=Estado actualizado");
+                    exit();
+                } else {
+                    header("Location: ver_ticket.php?uuid=" . $ticket_uuid . "&error=No tienes permisos para modificar este registro.");
+                    exit();
+                }
+            } else {
+                header("Location: dashboard.php?error=Ticket inexistente");
+                exit();
+            }
+        } catch (PDOException $e) {
+            die("Error crítico al actualizar el estado: " . $e->getMessage());
         }
-
-        // 2. Consultar el UUID, el residente original y el nombre del estado para la notificación
-        $stmtTicket = $pdo->prepare("SELECT r.ticket_uuid, r.usuario_reporta_id, r.ubicacion, e.nombre AS nombre_estado 
-                                     FROM reportes r 
-                                     LEFT JOIN estados e ON r.estado_id = e.id 
-                                     WHERE r.id = :id");
-        $stmtTicket->execute([':id' => $ticket_id]);
-        $ticketData = $stmtTicket->fetch();
-
-        if ($ticketData) {
-            $msg_residente = "Tu ticket #" . substr($ticketData['ticket_uuid'], 0, 8) . " en " . $ticketData['ubicacion'] . " ha cambiado al estado: " . strtoupper($ticketData['nombre_estado']);
-            
-            // 3. Insertar la notificación dirigida al propietario real
-            $stmtNotif = $pdo->prepare("INSERT INTO notificaciones (usuario_id, ticket_uuid, mensaje) VALUES (:uid, :uuid, :msg)");
-            $stmtNotif->execute([
-                ':uid'  => $ticketData['usuario_reporta_id'], 
-                ':uuid' => $ticketData['ticket_uuid'],
-                ':msg'  => $msg_residente
-            ]);
-        }
-
-        $pdo->commit();
-        header("Location: dashboard.php?status=updated");
-        exit;
-    } catch (PDOException $e) {
-        $pdo->rollBack();
-        die("Error en el flujo de actualización: " . $e->getMessage());
     }
 }
-?>
+header("Location: dashboard.php");
+exit();

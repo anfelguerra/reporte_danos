@@ -71,8 +71,12 @@ try {
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Usuarios</title>
-    <link href="https://jsdelivr.net" rel="stylesheet">
+    
+    <!-- ENLACES DE DISEÑO LOCALES RECTIFICADOS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/all.min.css">
 </head>
 <body class="bg-light">
 <div class="container my-4" style="max-width: 900px;">
@@ -89,7 +93,7 @@ try {
 
     <!-- Formulario Dinámico Unificado (Creación y Edición) -->
     <div class="card shadow-sm mb-4">
-        <div class="card-body bg-white text-dark">
+        <div class="card-body bg-white text-darkrounded">
             <h5 class="card-title h6 mb-3 border-bottom pb-2" id="form-titulo">Registrar Nuevo Usuario</h5>
             <form action="procesar_usuario.php" method="POST" id="form-usuario">
                 <input type="hidden" name="id" id="user_id">
@@ -125,31 +129,33 @@ try {
 
     <!-- Tabla del listado completo de usuarios en el sistema -->
     <div class="card shadow-sm">
-        <div class="card-body bg-white">
+        <div class="card-body bg-white rounded">
             <h5 class="card-title h6 mb-3 text-secondary">Usuarios en la Plataforma</h5>
-            <table class="table table-sm table-hover align-middle" style="font-size: 14px;">
-                <thead class="table-light">
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Correo</th>
-                        <th>Rol</th>
-                        <th class="text-center">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach($usuarios as $user): ?>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0" style="font-size: 14px;">
+                    <thead class="table-light">
                         <tr>
-                            <td><strong><?= htmlspecialchars($user['nombre']) ?></strong></td>
-                            <td><?= htmlspecialchars($user['correo']) ?></td>
-                            <td><span class="badge bg-dark text-capitalize"><?= htmlspecialchars($user['nombre_rol']) ?></span></td>
-                            <td class="text-center">
-                                <button class="btn btn-sm btn-warning text-dark py-0 px-2" onclick="cargarEdicion(<?= $user['id'] ?>, '<?= urlencode($user['nombre']) ?>', '<?= urlencode($user['correo']) ?>', '<?= urlencode($user['password']) ?>', <?= $user['rol_id'] ?>)">Editar</button>
-                                <a href="eliminar_usuario.php?id=<?= $user['id'] ?>" class="btn btn-sm btn-danger py-0 px-2" onclick="return confirm('¿Está seguro de eliminar este usuario?')">Eliminar</a>
-                            </td>
+                            <th>Nombre</th>
+                            <th>Correo</th>
+                            <th>Rol</th>
+                            <th class="text-center">Acciones</th>
                         </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <?php foreach($usuarios as $user): ?>
+                            <tr>
+                                <td><strong><?= htmlspecialchars($user['nombre']) ?></strong></td>
+                                <td><?= htmlspecialchars($user['correo']) ?></td>
+                                <td><span class="badge bg-dark text-capitalize"><?= htmlspecialchars($user['nombre_rol']) ?></span></td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-warning text-dark py-0 px-2" onclick="cargarEdicion(<?= $user['id'] ?>, '<?= urlencode($user['nombre']) ?>', '<?= urlencode($user['correo']) ?>', '<?= urlencode($user['password']) ?>', <?= $user['rol_id'] ?>)">Editar</button>
+                                    <a href="eliminar_usuario.php?id=<?= $user['id'] ?>" class="btn btn-sm btn-danger py-0 px-2" onclick="return confirm('¿Está seguro de eliminar este usuario?')">Eliminar</a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -176,5 +182,8 @@ function resetearFormulario() {
     document.getElementById('btn-cancelar').style.display = "none";
 }
 </script>
+
+<!-- JAVASCRIPT LOCAL RECTIFICADO -->
+<script src="js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

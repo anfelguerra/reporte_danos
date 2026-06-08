@@ -45,18 +45,23 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Gestión Residencial</title>
-    <link href="https://jsdelivr.net" rel="stylesheet">
-    <link rel="stylesheet" href="https://cloudflare.com">
+    
+    <!-- ENLACES DE DISEÑO LOCALES -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/all.min.css">
+    
     <style>
         body { background-color: #f8fafc; font-family: 'Segoe UI', system-ui, sans-serif; }
         .navbar-custom { background-color: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
         .card-custom { border: none; border-radius: 10px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         .table-custom th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; background-color: #f8fafc; }
-        .badge-creado { background-color: #e0f2fe; color: #0369a1; }
-        .badge-proceso { background-color: #fef3c7; color: #b45309; }
-        .badge-resuelto { background-color: #dcfce7; color: #15803d; }
-        .badge-cerrado { background-color: #f1f5f9; color: #475569; }
-        .badge-activo { background-color: #e0e7ff; color: #4338ca; }
+        
+        /* Modificadores de color para tus estados reales de la BD */
+        .badge-creado { background-color: #e0f2fe !important; color: #0369a1 !important; }
+        .badge-proceso { background-color: #fef3c7 !important; color: #b45309 !important; }
+        .badge-resuelto { background-color: #dcfce7 !important; color: #15803d !important; }
+        .badge-cerrado { background-color: #f1f5f9 !important; color: #475569 !important; }
+        .badge-activo { background-color: #e0e7ff !important; color: #4338ca !important; }
     </style>
 </head>
 <body>
@@ -90,7 +95,7 @@ try {
                 </a>
             </div>
 
-            <!-- REGLA N°1: Herramientas administrativas de gestión exclusivas para rol_id = 1 -->
+            <!-- REGLA N°1: Herramientas administrativas de gestión exclusivas para el Administrador (rol_id = 1) -->
             <?php if ($rol_id === 1): ?>
                 <div class="d-flex gap-2">
                     <a href="procesar_usuario.php" class="btn btn-dark fw-bold btn-sm px-3 shadow-sm">
@@ -148,7 +153,7 @@ try {
                                         </td>
                                         <td>
                                             <?php $estado_limpio = strtolower($ticket['nombre_estado'] ?? 'creado'); ?>
-                                            <span class="badge badge-<?= $estado_limpio ?> px-2.5 py-1.5 rounded-pill text-capitalize" style="font-size: 11px;">
+                                            <span class="badge badge-<?= $estado_limpio ?> px-2 py-1 text-capitalize" style="font-size: 12px;">
                                                 <?= htmlspecialchars($ticket['nombre_estado'] ?? 'Creado') ?>
                                             </span>
                                         </td>
@@ -175,6 +180,7 @@ try {
         </div>
     </div>
 
-    <script src="https://jsdelivr.net"></script>
+    <!-- SCRIPT JAVASCRIPT LOCAL -->
+    <script src="js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
