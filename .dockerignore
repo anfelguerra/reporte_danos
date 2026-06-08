@@ -1,0 +1,12 @@
+.git
+.gitignore
+README.md
+*.zip
+*.rar
+*.7z
+node_modules
+vendor
+.env
+.env.*
+Nuevo Documento de texto (2).txt
+Nuevo Imagen de mapa de bits.bmp
